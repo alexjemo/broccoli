@@ -1,1 +1,86 @@
-<h1>Hi</h1>
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+export default function AccessConfigurator() {
+  const [formData, setFormData] = useState({
+    doors: "",
+    turnstiles: "",
+    accessLevels: "",
+    elevators: ""
+  });
+  const [result, setResult] = useState(null);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = () => {
+    const { doors, turnstiles, accessLevels, elevators } = formData;
+    const recommendation = {
+      controller: doors > 4 ? "UNC-100 or Enterprise Controller" : "UNC-100",
+      readers:
+        turnstiles > 0
+          ? "NK86G Readers with Mobile Credential Support"
+          : "Standard Proximity or Bluetooth Readers",
+      software:
+        accessLevels > 3 || elevators > 0
+          ? "AxiomXa Advanced with Elevator and Multi-Level Support"
+          : "AxiomXa Lite",
+      credentials:
+        turnstiles > 0 || doors > 3
+          ? "Mobile Credentials (blueLINE) + Smart Cards"
+          : "Proximity Cards"
+    };
+    setResult(recommendation);
+  };
+
+  return (
+    <div className="p-4 max-w-xl mx-auto">
+      <h2 className="text-xl font-bold mb-4">Access Control Configurator</h2>
+      <div className="grid gap-4">
+        <input
+          type="number"
+          name="doors"
+          placeholder="Number of doors"
+          onChange={handleChange}
+          className="border p-2 rounded"
+        />
+        <input
+          type="number"
+          name="turnstiles"
+          placeholder="Number of turnstiles"
+          onChange={handleChange}
+          className="border p-2 rounded"
+        />
+        <input
+          type="number"
+          name="accessLevels"
+          placeholder="Number of access levels"
+          onChange={handleChange}
+          className="border p-2 rounded"
+        />
+        <input
+          type="number"
+          name="elevators"
+          placeholder="Number of elevators"
+          onChange={handleChange}
+          className="border p-2 rounded"
+        />
+        <Button onClick={handleSubmit}>Get Recommendations</Button>
+      </div>
+
+      {result && (
+        <Card className="mt-6">
+          <CardContent>
+            <h3 className="text-lg font-semibold">Recommended Setup</h3>
+            <p><strong>Controller:</strong> {result.controller}</p>
+            <p><strong>Readers:</strong> {result.readers}</p>
+            <p><strong>Software:</strong> {result.software}</p>
+            <p><strong>Credentials:</strong> {result.credentials}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
