@@ -1,86 +1,201 @@
-import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ALAS Gamification</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Phosphor Icons for modern minimalist icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <!-- Desktop Mockup Container -->
+    <div class="device-mockup">
+        <div class="device-screen">
+            <!-- App Container -->
+            <div id="app" class="app-container">
+                
+                <!-- Loading Screen -->
+                <div id="view-loading" class="view active-view flex-center">
+                    <div class="loader"></div>
+                    <p>Cargando...</p>
+                </div>
 
-export default function AccessConfigurator() {
-  const [formData, setFormData] = useState({
-    doors: "",
-    turnstiles: "",
-    accessLevels: "",
-    elevators: ""
-  });
-  const [result, setResult] = useState(null);
+                <!-- Events Selection View -->
+                <div id="view-events" class="view hidden" style="background-color: #f8f9fc; padding-top: 40px;">
+                    <div style="padding: 0 30px;">
+                        <h1 style="color: #1a4ef5; font-size: 32px; font-weight: 800; margin-bottom: 5px;">ALAS</h1>
+                        <p style="color: #8fa0ba; font-size: 11px; font-weight: 800; letter-spacing: 1px; margin-bottom: 15px;">GAMIFICACIÓN</p>
+                        <div style="width: 40px; height: 4px; background-color: #1a4ef5; border-radius: 2px; margin-bottom: 30px;"></div>
+                        <h2 style="color: #0b1a30; font-size: 28px; font-weight: 800; line-height: 1.2; margin-bottom: 30px;">Selecciona tu<br>evento</h2>
+                    </div>
+                    <div class="scroll-content" id="events-list" style="padding: 0 30px; padding-top: 0;">
+                        <!-- Events populated by JS -->
+                    </div>
+                </div>
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+                <!-- Registration View -->
+                <div id="view-register" class="view hidden" style="background-color: #f8f9fc; padding-top: 40px;">
+                    <div style="padding: 0 30px;">
+                        <h1 style="color: #1a4ef5; font-size: 32px; font-weight: 800; margin-bottom: 5px;">ALAS</h1>
+                        <p id="register-event-name" style="color: #8fa0ba; font-size: 11px; font-weight: 800; letter-spacing: 1px; margin-bottom: 15px; text-transform: uppercase;">WORKSHOP MEDELLÍN</p>
+                        <div style="width: 40px; height: 4px; background-color: #1a4ef5; border-radius: 2px; margin-bottom: 30px;"></div>
+                        <h2 style="color: #0b1a30; font-size: 28px; font-weight: 800; line-height: 1.2; margin-bottom: 30px;">Regístrate para<br>comenzar</h2>
+                    </div>
+                    <div class="scroll-content flex-center-col" style="padding: 0 30px; padding-top: 0;">
+                        <form id="login-form" style="width: 100%;">
+                            <div class="modern-input-group">
+                                <input type="text" id="user-name" required placeholder="NOMBRE" class="modern-input" autocomplete="name">
+                            </div>
+                            <div class="modern-input-group">
+                                <input type="text" id="user-company" required placeholder="EMPRESA" class="modern-input" autocomplete="organization">
+                            </div>
+                            <div class="modern-input-group">
+                                <input type="email" id="user-email" required placeholder="CORREO@EMPRESA.COM" class="modern-input" autocomplete="email">
+                            </div>
+                            
+                            <p style="text-align: center; color: #8fa0ba; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin: 20px 0 40px 0; padding: 0 20px;">GAMIFICACIÓN DE ALTA SEGURIDAD PARA EVENTOS B2B. ACCESO RÁPIDO.</p>
+                            
+                            <button type="submit" class="btn-pill" id="btn-submit-register">INGRESAR</button>
+                            <button type="button" class="btn-text-only" onclick="app.showView('view-events')">VOLVER</button>
+                        </form>
+                    </div>
+                </div>
 
-  const handleSubmit = () => {
-    const { doors, turnstiles, accessLevels, elevators } = formData;
-    const recommendation = {
-      controller: doors > 4 ? "UNC-100 or Enterprise Controller" : "UNC-100",
-      readers:
-        turnstiles > 0
-          ? "NK86G Readers with Mobile Credential Support"
-          : "Standard Proximity or Bluetooth Readers",
-      software:
-        accessLevels > 3 || elevators > 0
-          ? "AxiomXa Advanced with Elevator and Multi-Level Support"
-          : "AxiomXa Lite",
-      credentials:
-        turnstiles > 0 || doors > 3
-          ? "Mobile Credentials (blueLINE) + Smart Cards"
-          : "Proximity Cards"
-    };
-    setResult(recommendation);
-  };
+                <!-- Dashboard View -->
+                <div id="view-dashboard" class="view hidden">
+                    <header class="app-header">
+                        <div class="user-info">
+                            <p id="dash-name" class="font-bold">Usuario</p>
+                            <p id="dash-event" class="text-small">Evento</p>
+                        </div>
+                        <div class="points-badge">
+                            <i class="ph ph-star-fill"></i>
+                            <span id="dash-points">0</span> pts
+                        </div>
+                    </header>
+                    <div class="scroll-content">
+                        <h2 class="section-title">Retos de Patrocinadores</h2>
+                        <div id="sponsors-list" class="list-container">
+                            <!-- Sponsors populated by JS -->
+                        </div>
 
-  return (
-    <div className="p-4 max-w-xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">Access Control Configurator</h2>
-      <div className="grid gap-4">
-        <input
-          type="number"
-          name="doors"
-          placeholder="Number of doors"
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="number"
-          name="turnstiles"
-          placeholder="Number of turnstiles"
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="number"
-          name="accessLevels"
-          placeholder="Number of access levels"
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="number"
-          name="elevators"
-          placeholder="Number of elevators"
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <Button onClick={handleSubmit}>Get Recommendations</Button>
-      </div>
+                        <h2 class="section-title mt-4">Puntos Extra</h2>
+                        <div class="list-container">
+                            <div class="challenge-card" onclick="app.showView('view-extra', 'social')">
+                                <div class="challenge-icon"><i class="ph ph-camera"></i></div>
+                                <div class="challenge-info">
+                                    <h3>Foto en Redes</h3>
+                                    <p>Comparte una foto del evento</p>
+                                </div>
+                                <div class="challenge-points">+50 pts</div>
+                            </div>
+                            <div class="challenge-card" onclick="app.showView('view-extra', 'colleague')">
+                                <div class="challenge-icon"><i class="ph ph-users"></i></div>
+                                <div class="challenge-info">
+                                    <h3>Foto con Colega</h3>
+                                    <p>Reencuentro con un colega</p>
+                                </div>
+                                <div class="challenge-points">+50 pts</div>
+                            </div>
+                            <div class="challenge-card" onclick="app.showView('view-extra', 'survey')">
+                                <div class="challenge-icon"><i class="ph ph-list-numbers"></i></div>
+                                <div class="challenge-info">
+                                    <h3>Encuesta del Evento</h3>
+                                    <p>Danos tu opinión</p>
+                                </div>
+                                <div class="challenge-points">+100 pts</div>
+                            </div>
+                            <div class="challenge-card" onclick="app.showView('view-extra', 'card')">
+                                <div class="challenge-icon"><i class="ph ph-address-book"></i></div>
+                                <div class="challenge-info">
+                                    <h3>Tarjeta de Presentación</h3>
+                                    <p>Guarda el contacto de un expositor</p>
+                                </div>
+                                <div class="challenge-points">+50 pts</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-      {result && (
-        <Card className="mt-6">
-          <CardContent>
-            <h3 className="text-lg font-semibold">Recommended Setup</h3>
-            <p><strong>Controller:</strong> {result.controller}</p>
-            <p><strong>Readers:</strong> {result.readers}</p>
-            <p><strong>Software:</strong> {result.software}</p>
-            <p><strong>Credentials:</strong> {result.credentials}</p>
-          </CardContent>
-        </Card>
-      )}
+                <!-- Sponsor Quiz View -->
+                <div id="view-sponsor" class="view hidden">
+                    <header class="app-header no-bg">
+                        <button class="btn-icon" onclick="app.showView('view-dashboard')"><i class="ph ph-arrow-left"></i></button>
+                        <h2 id="quiz-sponsor-name">Sponsor Name</h2>
+                        <div style="width: 40px;"></div> <!-- Spacer -->
+                    </header>
+                    <div class="scroll-content flex-center-col" style="padding-top: 0;">
+                        <img id="quiz-sponsor-logo" src="" alt="Sponsor Logo" class="sponsor-logo-large">
+                        <div class="quiz-card">
+                            <p id="quiz-question" class="quiz-question">¿Pregunta del patrocinador?</p>
+                            <div id="quiz-options" class="quiz-options">
+                                <!-- Options populated by JS -->
+                            </div>
+                            <p id="quiz-feedback" class="feedback-msg hidden"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extra Challenge View -->
+                <div id="view-extra" class="view hidden">
+                    <header class="app-header no-bg">
+                        <button class="btn-icon" onclick="app.showView('view-dashboard')"><i class="ph ph-arrow-left"></i></button>
+                        <h2 id="extra-title">Reto Extra</h2>
+                        <div style="width: 40px;"></div>
+                    </header>
+                    <div class="scroll-content flex-center-col" id="extra-content">
+                        <!-- Dynamic content based on challenge type -->
+                    </div>
+                </div>
+
+                <!-- Admin View -->
+                <div id="view-admin" class="view hidden">
+                    <!-- Admin Login -->
+                    <div id="admin-login-section" class="flex-center glass-card">
+                        <h2>Panel Administrador</h2>
+                        <form id="admin-login-form">
+                            <div class="input-group">
+                                <label>Usuario</label>
+                                <input type="text" id="admin-user" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Contraseña</label>
+                                <input type="password" id="admin-pass" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Entrar</button>
+                            <button type="button" class="btn btn-secondary mt-2" onclick="app.showView('view-login')">Volver</button>
+                        </form>
+                    </div>
+
+                    <!-- Admin Dashboard -->
+                    <div id="admin-dash-section" class="hidden" style="width: 100%; height: 100%; display: flex; flex-direction: column;">
+                        <header class="app-header">
+                            <h2>Admin Dashboard</h2>
+                            <button class="btn-icon" onclick="adminApp.logout()"><i class="ph ph-sign-out"></i></button>
+                        </header>
+                        <div class="admin-tabs">
+                            <button class="tab-btn active" onclick="adminApp.switchTab('events')">Eventos</button>
+                            <button class="tab-btn" onclick="adminApp.switchTab('sponsors')">Sponsors</button>
+                            <button class="tab-btn" onclick="adminApp.switchTab('leaderboard')">Leaderboard</button>
+                        </div>
+                        <div class="scroll-content admin-content" id="admin-content-area">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
-  );
-}
+
+    <!-- Scripts -->
+    <script src="js/database-api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
